@@ -10,6 +10,9 @@ requests>=2.31.0
 # HTML/XML parsing for URL-based text extraction
 beautifulsoup4>=4.12.0
 
+# YAML configuration support
+PyYAML>=6.0.0
+
 # Modern CLI framework - cleaner than argparse, supports auto-completion
 typer>=0.9.0
 
