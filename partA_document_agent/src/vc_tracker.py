@@ -1,15 +1,25 @@
 """
-Value Credit Tracker Module
+Value Credit Tracker Module (Phase 2 Enhanced)
 
 Tracks all processing steps with timestamps, durations, and metadata.
 Generates comprehensive JSON summaries for auditability.
+Supports decorator-based instrumentation and configuration.
 """
 
 import json
 import time
 import os
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Callable, TypeVar, ParamSpec
+from functools import wraps
+
+try:
+    from time import perf_counter
+except ImportError:
+    # Python < 3.3 fallback
+    perf_counter = time.time
+
+import config
 
 
 # Global session storage
@@ -176,3 +186,158 @@ def log_error(job_id: str, step_name: str, error: Exception, output_dir: str = "
     print(f"[WARN] {error_data['error_type']}: {error_data['error_message']}")
 
     return error_path
+
+
+# Type hints for decorator
+F = TypeVar('F', bound=Callable[..., Any])
+P = ParamSpec('P')
+
+
+def vc_decorator(
+    name: Optional[str] = None,
+    enabled: Optional[bool] = None
+) -> Callable[[F], F]:
+    """
+    Decorator to automatically track function execution as a VC event.
+
+    Usage:
+        @vc_decorator("text_extraction")
+        def extract_text():
+            ...
+
+        @vc_decorator()  # Will use function name
+        def process():
+            ...
+
+    Args:
+        name: VC event name (defaults to function name)
+        enabled: Whether to enable tracking (defaults to config)
+
+    Returns:
+        Decorated function
+    """
+    def decorator(func: F) -> F:
+        event_name = name or func.__name__
+
+        @wraps(func)
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> Any:
+            # Check if tracking is enabled
+            tracking_enabled = enabled
+            if tracking_enabled is None:
+                try:
+                    tracking_enabled = config.get_config().vc.enabled
+                except Exception:
+                    # If config not loaded yet, default to enabled
+                    tracking_enabled = True
+
+            if not tracking_enabled:
+                # Just call the function without tracking
+                return func(*args, **kwargs)
+
+            # Track execution
+            start = perf_counter()
+            result = None
+            error = None
+
+            try:
+                result = func(*args, **kwargs)
+                return result
+            except Exception as e:
+                error = e
+                raise
+            finally:
+                # Calculate duration
+                duration = (perf_counter() - start) * 1000  # Convert to ms
+
+                # Log VC event
+                meta = {
+                    "function": func.__name__,
+                    "module": func.__module__,
+                    "args_count": len(args),
+                    "kwargs_count": len(kwargs),
+                    "duration_ms": duration
+                }
+
+                # Add function docstring if available
+                if func.__doc__:
+                    meta["doc"] = func.__doc__.strip().split('\n')[0][:100]
+
+                # Include error info if there was an exception
+                if error:
+                    meta["error"] = type(error).__name__
+                    meta["error_message"] = str(error)
+
+                vc_step(
+                    name=event_name,
+                    count=1,
+                    duration_ms=duration,
+                    meta=meta
+                )
+
+        return wrapper
+    return decorator
+
+
+def is_vc_enabled() -> bool:
+    """
+    Check if VC tracking is enabled.
+
+    Returns:
+        True if enabled, False otherwise
+    """
+    try:
+        return config.get_config().vc.enabled
+    except Exception:
+        return True  # Default to enabled if config not loaded
+
+
+def enable_vc() -> None:
+    """
+    Enable VC tracking (for runtime control).
+    """
+    try:
+        vc_config = config.get_config().vc
+        vc_config.enabled = True
+    except Exception:
+        pass
+
+
+def disable_vc() -> None:
+    """
+    Disable VC tracking (for runtime control).
+    """
+    try:
+        vc_config = config.get_config().vc
+        vc_config.enabled = False
+    except Exception:
+        pass
+
+
+def get_vc_stats() -> Dict[str, Any]:
+    """
+    Get current VC statistics.
+
+    Returns:
+        Dictionary with VC statistics
+    """
+    steps = get_vc_log()
+
+    stats = {
+        "total_events": len(steps),
+        "total_vc_steps": calculate_total_vc_steps(),
+        "job_id": get_session_job_id(),
+        "session_start": get_session_start(),
+        "events_by_type": {},
+        "events_with_duration": 0,
+        "total_duration_ms": 0.0
+    }
+
+    for step in steps:
+        event_type = step.get("name", "unknown")
+        stats["events_by_type"][event_type] = stats["events_by_type"].get(event_type, 0) + 1
+
+        if "duration_ms" in step:
+            stats["events_with_duration"] += 1
+            stats["total_duration_ms"] += step["duration_ms"]
+
+    return stats

@@ -1,0 +1,201 @@
+# Configuration for Document Review Agent - Phase 2
+# =================================================
+
+# Human Approval Settings
+# -----------------------
+human_approval:
+  # Default mode: cli (interactive), auto (automatic), or none (skip)
+  mode: cli
+
+  # Timeout for human approval prompt in seconds
+  timeout_sec: 300
+
+  # If true, auto-approve on timeout instead of rejecting
+  auto_approve_on_timeout: true
+
+# External API Configuration
+# -------------------------
+external_api:
+  # Default endpoint
+  endpoint: "https://httpbin.org/post"
+
+  # Request timeout in seconds
+  timeout_sec: 10
+
+  # Retry configuration
+  retry:
+    # Maximum number of retry attempts
+    max_attempts: 3
+
+    # Initial backoff delay in seconds (will be exponential)
+    backoff_seconds: 2
+
+    # Maximum backoff delay in seconds
+    max_backoff_seconds: 60
+
+    # Jitter factor for random backoff (0.0 to 1.0)
+    jitter: 0.1
+
+  # Circuit breaker configuration
+  circuit_breaker:
+    # Number of consecutive failures before opening circuit
+    failure_threshold: 3
+
+    # Time window in seconds to consider failures
+    failure_window: 60
+
+    # How long to keep circuit open in seconds
+    reset_timeout: 30
+
+# Red-Flag Detector Settings
+# --------------------------
+detector:
+  # Enable/disable specific detectors
+  enabled:
+    emails: true
+    phones: true
+    keywords: true
+    credit_cards: true
+    ibans: true
+    api_keys: true
+    obfuscated: true
+
+  # Email detection patterns
+  email_patterns:
+    - "\\b[\\w\\.-]+@[\\w\\.-]+\\.\\w+\\b"
+
+  # Phone number patterns (regex strings)
+  phone_patterns:
+    - "\\b\\d{10}\\b"
+    - "\\b\\d{3}[-.]?\\d{3}[-.]?\\d{4}\\b"
+    - "\\b\\(\\d{3}\\)\\s?\\d{3}[-.]?\\d{4}\\b"
+
+  # Sensitive keywords (case-insensitive)
+  keywords:
+    - password
+    - pwd
+    - passcode
+    - ssn
+    - social_security
+    - confidential
+    - api_key
+    - api key
+    - apikey
+    - secret
+    - token
+    - private_key
+    - access_key
+    - credentials
+
+  # Credit card pattern (basic, no Luhn validation)
+  credit_card_pattern: "\\b(?:\\d{4}[-\\s]?){3}\\d{4}\\b"
+
+  # IBAN patterns (simplified, country code + check digits + account)
+  iban_patterns:
+    - "\\b[A-Z]{2}\\d{2}[A-Z0-9]{11,30}\\b"
+    - "\\b[A-Z]{2}\\d{2}\\s(?:[A-Z0-9]\\s?){11,30}\\b"
+
+  # API key patterns (long alphanumeric strings)
+  api_key_patterns:
+    - "[A-Za-z0-9\\-_]{32,}"  # Generic long keys
+    - "\\bsk-[A-Za-z0-9]{48}\\b"  # OpenAI style
+    - "\\bghp_[A-Za-z0-9]{36}\\b"  # GitHub PAT style
+
+  # Obfuscated patterns (spaced or masked numbers)
+  obfuscated_patterns:
+    - "\\b\\d\\s(?:\\d\\s){8,}\\d\\b"  # Spaced digits
+
+  # Minimum confidence threshold (low, medium, high)
+  min_confidence_threshold: "low"
+
+  # Redaction settings for logs (don't store full values in logs)
+  redaction:
+    # Number of characters to show before/after match in logs
+    context_chars: 15
+    # Redaction character
+    redacted_char: "*"
+
+# Logging Configuration
+# --------------------
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: INFO
+
+  # Log to file
+  file_enabled: true
+
+  # Log format: json or text
+  format: json
+
+  # Log file rotation (true/false)
+  file_rotation: false
+
+  # Maximum log file size in MB (if rotation enabled)
+  max_file_size_mb: 10
+
+  # Number of backup files to keep (if rotation enabled)
+  backup_count: 5
+
+  # Log to console
+  console_enabled: true
+
+  # Verbose mode (overrides level to DEBUG)
+  verbose: false
+
+# Value Credit (VC) Configuration
+# --------------------------------
+vc:
+  # Enable VC tracking
+  enabled: true
+
+  # Include performance metrics
+  include_performance_metrics: true
+
+  # Include confidence scores
+  include_confidence: true
+
+  # LogVC events to console
+  log_to_console: true
+
+  # Export format: json, jsonl, or both
+  export_format: json
+
+# Token Estimator Configuration
+# -----------------------------
+token_estimator:
+  # Enable token estimation
+  enabled: true
+
+  # Estimation method: heuristic, openai, or custom
+  method: heuristic
+
+  # Heuristic: characters per token
+  chars_per_token: 4
+
+  # Add uncertainty range (± percentage)
+  uncertainty_percentage: 10
+
+# General Settings
+# ----------------
+general:
+  # Default output directory
+  output_dir: output
+
+  # Temp directory for processing
+  temp_dir: /tmp
+
+  # Maximum file size to process in MB
+  max_file_size_mb: 50
+
+  # Supported file extensions
+  supported_extensions:
+    - ".pdf"
+    - ".txt"
+    - ".md"
+    - ".html"
+
+  # URL fetch timeout
+  url_timeout_sec: 30
+
+  # Default human approval mode
+  default_human_approval: cli

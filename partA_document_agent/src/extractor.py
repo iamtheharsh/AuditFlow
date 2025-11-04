@@ -17,7 +17,8 @@ from pypdf import PdfReader
 
 import vc_tracker
 
-
+# Apply decorator for instrumentation
+@vc_tracker.vc_decorator("text_extraction")
 def extract_text(input_path: str, job_id: str, output_dir: str = "output") -> Tuple[str, str]:
     """
     Extract text from PDF file or URL.
