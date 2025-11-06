@@ -133,6 +133,41 @@ Each run creates:
 - **Log file** (`*_log.txt`) - Processing log
 - **Audit report** (Part B) - Code analysis findings
 
+### Value Credits Summary Format
+
+The VC summary includes **timestamps and durations for each step** (Bonus feature):
+
+```json
+{
+  "job_id": "DOC-2025-002",
+  "vc_summary": [
+    {
+      "name": "text_extracted",
+      "count": 1,
+      "timestamp": "2025-11-06T20:47:43.123Z",
+      "duration_ms": 1.2
+    },
+    {
+      "name": "red_flags_found",
+      "count": 1,
+      "timestamp": "2025-11-06T20:47:43.125Z"
+    },
+    {
+      "name": "external_api_called",
+      "count": 1,
+      "timestamp": "2025-11-06T20:47:45.623Z",
+      "duration_ms": 2497.8
+    }
+  ],
+  "total_vc_steps": 6
+}
+```
+
+**Features:**
+- ✅ ISO 8601 timestamps for each VC step
+- ✅ Duration in milliseconds for performance tracking
+- ✅ Complete audit trail with metadata
+
 ### Troubleshooting
 
 **"python: command not found"**
