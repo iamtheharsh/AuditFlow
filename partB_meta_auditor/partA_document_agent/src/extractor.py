@@ -146,7 +146,7 @@ def _extract_from_url(url: str) -> str:
     print(f"[INFO] Fetching URL: {url}")
 
     try:
-# [VC] external_api_call detected here - GET response.headers.get
+# [VC] external_api_call detected here - GET url.lower
 # Suggested: Add @vc_tracker('external_api_call') decorator or vc_step() call
 
         response = requests.get(url, timeout=30)

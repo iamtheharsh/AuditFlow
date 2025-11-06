@@ -127,7 +127,7 @@ def _call_httpbin_with_retry(
 
         try:
             # Make the request
-# [VC] external_api_call detected here - POST config.timeout
+# [VC] external_api_call detected here - POST response.raise
 # Suggested: Add @vc_tracker('external_api_call') decorator or vc_step() call
 
             response = requests.post(
