@@ -62,6 +62,97 @@ value-credits-agent/
    - Check Phase 0 checklist in respective part readme files
    - Run test artifacts to verify installation
 
+## Quick Start - How to Run
+
+### Part A - Document Review Agent
+
+Navigate to Part A directory:
+```bash
+cd partA_document_agent
+```
+
+**Example 1: Process a clean PDF (no sensitive data)**
+```bash
+python3 src/main.py --input test_docs/sample_clean.pdf --output output/ --job-id DOC-2025-002 --human-approval auto
+```
+
+**Example 2: Process a sensitive PDF (with PII - interactive mode)**
+```bash
+python3 src/main.py --input test_docs/sample_sensitive.pdf --output output/ --job-id DOC-2025-001
+```
+*(Will prompt for approval - press 'y' to approve)*
+
+**Example 3: Process a URL**
+```bash
+python3 src/main.py --input https://httpbin.org/html --output output/ --job-id DOC-2025-003
+```
+
+**View Results:**
+```bash
+ls -la output/DOC-2025-002_*          # List all output files
+cat output/DOC-2025-002_vc_summary.json  # View VC summary
+```
+
+### Part B - Meta Auditor
+
+Navigate to Part B directory:
+```bash
+cd ../partB_meta_auditor
+```
+
+**Example 1: Scan a codebase (audit mode)**
+```bash
+python3 src/auditor.py --target ../partA_document_agent/src/ --output-dir output/
+```
+
+**Example 2: Scan with decorator injection (bonus feature)**
+```bash
+python3 src/auditor.py --target ../partA_document_agent/src/ --output-dir output/ --inject
+```
+
+**View Results:**
+```bash
+ls -la output/AUDIT-*.txt                  # List all audit reports
+cat output/AUDIT-20251105-174031_audit_report.txt  # View latest report
+```
+
+### Command Options
+
+**Common arguments:**
+- `--input` or `--target`: File/directory to process
+- `--output` or `--output-dir`: Where to save results
+- `--job-id`: Unique identifier for the job
+- `--human-approval`: auto, cli, or none
+- `--inject`: Enable decorator injection (Part B only)
+
+### Expected Output
+
+Each run creates:
+- **Raw text file** (`*_raw.txt`) - Extracted content
+- **VC summary** (`*_vc_summary.json`) - Value Credits tracking
+- **Log file** (`*_log.txt`) - Processing log
+- **Audit report** (Part B) - Code analysis findings
+
+### Troubleshooting
+
+**"python: command not found"**
+```bash
+# Use python3 instead
+python3 src/main.py ...
+```
+
+**"No module named 'pypdf'"**
+```bash
+# Install dependencies
+pip install -r requirements.txt
+```
+
+**Permission denied**
+```bash
+# Make sure you're in the correct directory
+cd /path/to/value-credits-agent
+```
+
 ## Phases
 
 ### Phase 0: Foundation (Current)
