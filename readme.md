@@ -188,7 +188,7 @@ pip install -r requirements.txt
 cd /path/to/value-credits-agent
 ```
 
-## Phases
+## Phases of Project
 
 ### Phase 0: Foundation (Current)
 - [x] Project structure creation
