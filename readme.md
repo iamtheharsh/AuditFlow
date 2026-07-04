@@ -233,7 +233,7 @@ The VC system tracks all meaningful operations in the pipeline:
 
 Each job produces a VC summary JSON with complete audit trail.
 
-## Security 
+## Security & Privacy
 
 - **No Real PII**: All test documents use synthetic data
 - **Secure Defaults**: Environment variables for sensitive config
